@@ -7,6 +7,24 @@ const validSlots = new Set(["09-00", "15-00", "19-00", "19-20", "19-30", "20-00"
 if (!validSlots.has(slot)) throw new Error(`Unknown slot: ${slot}`);
 if (!process.env.TELEGRAM_BOT_TOKEN) throw new Error("Missing TELEGRAM_BOT_TOKEN");
 
+if (process.env.WAIT_FOR_SLOT === "true") {
+  const [hour, minute] = slot.split("-").map(Number);
+  const now = new Date();
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const targetUtcMs = Date.UTC(
+    kst.getUTCFullYear(),
+    kst.getUTCMonth(),
+    kst.getUTCDate(),
+    hour - 9,
+    minute,
+  );
+  const waitMs = targetUtcMs - now.getTime();
+  if (waitMs > 0 && waitMs <= 15 * 60 * 1000) {
+    console.log(`Waiting ${Math.ceil(waitMs / 1000)} seconds for ${slot} KST`);
+    await new Promise((resolve) => setTimeout(resolve, waitMs));
+  }
+}
+
 const api = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}`;
 const caption = (await fs.readFile(new URL(`./messages/${slot}.txt`, import.meta.url), "utf8")).trim();
 const imageUrl = new URL(`./images/${slot}.png`, import.meta.url);
