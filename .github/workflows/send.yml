@@ -1,0 +1,49 @@
+name: Telegram scheduled messages
+
+on:
+  schedule:
+    # GitHub cron uses UTC. These are 09:00, 15:00, 19:00, 19:20, 19:30, 20:00 KST.
+    - cron: "0 0 * * *"
+    - cron: "0 6 * * *"
+    - cron: "0 10 * * *"
+    - cron: "20 10 * * *"
+    - cron: "30 10 * * *"
+    - cron: "0 11 * * *"
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: Message slot
+        required: true
+        type: choice
+        options: [09-00, 15-00, 19-00, 19-20, 19-30, 20-00]
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Select scheduled slot
+        id: slot
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "value=${{ inputs.slot }}" >> "$GITHUB_OUTPUT"
+          else
+            case "${{ github.event.schedule }}" in
+              "0 0 * * *") value="09-00" ;;
+              "0 6 * * *") value="15-00" ;;
+              "0 10 * * *") value="19-00" ;;
+              "20 10 * * *") value="19-20" ;;
+              "30 10 * * *") value="19-30" ;;
+              "0 11 * * *") value="20-00" ;;
+              *) exit 1 ;;
+            esac
+            echo "value=$value" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Send Telegram message
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: node send.mjs "${{ steps.slot.outputs.value }}"
