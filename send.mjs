@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 
 const CHAT_ID = "-1002168116733";
 const slot = process.argv[2];
-const validSlots = new Set(["09-00", "15-00", "19-00", "19-20", "19-30", "20-00"]);
+const validSlots = new Set(["09-00", "15-00", "19-00", "19-30", "20-00"]);
 
 if (!validSlots.has(slot)) throw new Error(`Unknown slot: ${slot}`);
 if (!process.env.TELEGRAM_BOT_TOKEN) throw new Error("Missing TELEGRAM_BOT_TOKEN");
@@ -19,9 +19,13 @@ if (process.env.WAIT_FOR_SLOT === "true") {
     minute,
   );
   const waitMs = targetUtcMs - now.getTime();
-  if (waitMs > 0 && waitMs <= 15 * 60 * 1000) {
+  if (waitMs > 0 && waitMs <= 4 * 60 * 60 * 1000) {
     console.log(`Waiting ${Math.ceil(waitMs / 1000)} seconds for ${slot} KST`);
     await new Promise((resolve) => setTimeout(resolve, waitMs));
+  }
+
+  if (waitMs < -10 * 60 * 1000) {
+    throw new Error(`Skipped ${slot}: scheduled run started too late`);
   }
 }
 
