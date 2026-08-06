@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 
 const CHAT_ID = "-1002168116733";
 const slot = process.argv[2];
-const validSlots = new Set(["09-00", "15-00", "19-00", "19-30", "20-00"]);
+const validSlots = new Set(["09-00", "15-00", "19-00", "19-20", "19-30", "20-00"]);
 
 if (!validSlots.has(slot)) throw new Error(`Unknown slot: ${slot}`);
 if (!process.env.TELEGRAM_BOT_TOKEN) throw new Error("Missing TELEGRAM_BOT_TOKEN");
