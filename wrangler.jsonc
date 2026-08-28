@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "telegram-scheduled-messages",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-08-28",
+  "workers_dev": false,
+  "triggers": {
+    "crons": ["* * * * *"]
+  },
+  "assets": {
+    "directory": "./images",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "kv_namespaces": [
+    {
+      "binding": "SEND_STATE",
+      "id": "5865fc7e35724c9392ba565324492ae2"
+    }
+  ],
+  "rules": [
+    {
+      "type": "Text",
+      "globs": ["**/*.txt"],
+      "fallthrough": true
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

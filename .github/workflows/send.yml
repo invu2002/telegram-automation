@@ -1,14 +1,6 @@
 name: Telegram scheduled messages
 
 on:
-  schedule:
-    # GitHub cron uses UTC. Start three hours early because scheduled runs can be delayed.
-    - cron: "0 21 * * *" # 06:00 KST -> send at 09:00 KST
-    - cron: "0 3 * * *"  # 12:00 KST -> send at 15:00 KST
-    - cron: "0 7 * * *"  # 16:00 KST -> send at 19:00 KST
-    - cron: "20 7 * * *" # 16:20 KST -> send at 19:20 KST
-    - cron: "30 7 * * *" # 16:30 KST -> send at 19:30 KST
-    - cron: "0 8 * * *"  # 17:00 KST -> send at 20:00 KST
   workflow_dispatch:
     inputs:
       slot:
@@ -47,5 +39,6 @@ jobs:
       - name: Send Telegram message
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          WAIT_FOR_SLOT: ${{ github.event_name == 'schedule' && 'true' || 'false' }}
+          # Manual recovery runs also wait until the selected slot when started early.
+          WAIT_FOR_SLOT: true
         run: node send.mjs "${{ steps.slot.outputs.value }}"
